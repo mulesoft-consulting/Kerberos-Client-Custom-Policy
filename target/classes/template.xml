@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:http-policy="http://www.mulesoft.org/schema/mule/http-policy"
+      xmlns:http-transform="http://www.mulesoft.org/schema/mule/http-policy-transform"	  
+	  xmlns:kerberos="http://www.mulesoft.org/schema/mule/kerberos"
+	  xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+      xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+               http://www.mulesoft.org/schema/mule/http-policy http://www.mulesoft.org/schema/mule/http-policy/current/mule-http-policy.xsd
+               http://www.mulesoft.org/schema/mule/http-policy-transform http://www.mulesoft.org/schema/mule/http-policy-transform/current/mule-http-policy-transform.xsd 
+			   http://www.mulesoft.org/schema/mule/kerberos http://www.mulesoft.org/schema/mule/kerberos/current/mule-kerberos.xsd
+			   http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<kerberos:client-config name="Mule_kerberos_Client" keyTabLocation="{{{keytabLocation}}}" clientPrincipal="{{{userPrincipal}}}" serverPrincipal="{{{servicePrincipal}}}"/>
+	<http-policy:proxy name="{{{policyId}}}-custom-policy">
+        <http-policy:source propagateMessageTransformations="true">
+			<try>
+				<logger message="Beginning of Kerberos Client custom-policy - {{{policyId}}}"/>				
+				<kerberos:create-service-ticket config-ref="Mule_kerberos_Client" target="serviceTicket"/>
+				<http-transform:add-request-headers-list>
+                    <http-transform:new-headers>
+                        <http-transform:header headerName="Authorization" headerValue="#[vars.serviceTicket]"/>
+                    </http-transform:new-headers>
+                </http-transform:add-request-headers-list>
+				<logger message="End of of Kerberos Client custom-policy - {{{policyId}}}"/>
+				<http-policy:execute-next/>
+				 <error-handler>					
+					<on-error-continue>
+						<logger message="#[error.description]"/>
+						<http-transform:set-response statusCode="500">						    	
+							<http-transform:body>
+								#[ output application/json
+								---
+								{"error": "an exception occured, please contact system administrator"}
+								]
+							</http-transform:body>							
+						</http-transform:set-response>
+						<logger message="Error occured in {{{policyId}}}-custom-Policy"/>
+					</on-error-continue>				
+				</error-handler>
+			</try>
+        </http-policy:source>
+    </http-policy:proxy>
+</mule>

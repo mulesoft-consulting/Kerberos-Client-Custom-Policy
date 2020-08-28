@@ -1,0 +1,40 @@
+id: kerberos client custom policy
+name: kerberos client custom policy
+description: creates a kerberos service ticket for the service principal name configured
+category: Custom
+type: custom
+resourceLevelSupported: true
+encryptionSupported: false
+standalone: true
+requiredCharacteristics: []
+providedCharacteristics: []
+configuration:
+  - propertyName: userPrincipal
+    name: User Principal
+    description: |
+      User principal Name
+    type: string
+    defaultValue:
+    optional: false
+    sensitive: false
+    allowMultiple: false
+  - propertyName: servicePrincipal
+    name: Service Principal
+    description: |
+      Service principal Name
+    type: string
+    defaultValue:
+    optional: false
+    sensitive: false
+    allowMultiple: false
+  - propertyName: keytabLocation
+    name: Keytab Location
+    description: |
+      Location of the keytab file
+    type: string
+    defaultValue:
+    optional: false
+    sensitive: false
+    allowMultiple: false
+ 
+      
